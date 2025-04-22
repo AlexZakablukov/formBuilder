@@ -12,7 +12,10 @@ export const textFieldFormElement: TFormElement = {
   construct: (id: string) => ({
     id,
     type,
-    extraAttributes,
+    extraAttributes: {
+      ...extraAttributes,
+      name: id,
+    },
   }),
 
   designerComponent: DesignerComponent,

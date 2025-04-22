@@ -5,8 +5,6 @@ import { Box } from '@mui/material';
 const FormPreview = () => {
   const { elements } = useFormBuilderContext();
 
-  console.log({ elements });
-
   const fields = elements.map((element) => {
     return {
       name: (element.extraAttributes?.name as string) || '',
