@@ -1,5 +1,5 @@
-import FormBuilder from './components/builder/FormBuilder.tsx';
 import { Box, CssBaseline } from '@mui/material';
+import FormBuilder from './components/builder/FormBuilder.tsx';
 
 function App() {
   return (
@@ -14,6 +14,36 @@ function App() {
     >
       <CssBaseline />
       <FormBuilder />
+      {/*<FormRender*/}
+      {/*  onSubmit={(values) => {*/}
+      {/*    console.log({ values });*/}
+      {/*  }}*/}
+      {/*  defaultValues={{*/}
+      {/*    'textField-name': '',*/}
+      {/*    'switch-name': false,*/}
+      {/*  }}*/}
+      {/*  schema={z.object({*/}
+      {/*    'textField-name': z.string().min(1, 'Required'),*/}
+      {/*    'switch-name': z.boolean(),*/}
+      {/*  })}*/}
+      {/*  elements={[*/}
+      {/*    {*/}
+      {/*      type: 'textField',*/}
+      {/*      props: {*/}
+      {/*        name: 'textField-name',*/}
+      {/*        label: 'Text Field',*/}
+      {/*        required: true,*/}
+      {/*      },*/}
+      {/*    },*/}
+      {/*    {*/}
+      {/*      type: 'switch',*/}
+      {/*      props: {*/}
+      {/*        name: 'switch-name',*/}
+      {/*        label: 'Switch',*/}
+      {/*      },*/}
+      {/*    },*/}
+      {/*  ]}*/}
+      {/*/>*/}
     </Box>
   );
 }

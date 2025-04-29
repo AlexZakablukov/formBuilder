@@ -1,56 +1,44 @@
-import { TFormElement } from './FormElements.tsx';
-import { Card, CardContent, CardHeader, Typography } from '@mui/material';
-import { useDraggable } from '@dnd-kit/core';
+import { Card, CardContent, CardHeader, CardProps } from '@mui/material';
+import { ComponentType, FC, ReactElement } from 'react';
+import { TElementsType } from './types.ts';
+import { ELEMENTS_CONFIG_MAP } from '../elements';
 
-type TSidebarBtnProps = {
-  formElement: TFormElement;
-};
+type TSidebarCardProps = { type: TElementsType } & CardProps;
 
-const SidebarCard = ({ formElement }: TSidebarBtnProps) => {
-  const { icon: Icon, label } = formElement;
-
-  const draggable = useDraggable({
-    id: `sidebarCard-${formElement.type}`,
-    data: {
-      type: formElement.type,
-      isSidebarCard: true,
-    },
-  });
+const SidebarCard: FC<TSidebarCardProps> = ({
+  type,
+  ...props
+}): ReactElement => {
+  const componentProps = ELEMENTS_CONFIG_MAP[type].initialProps;
+  const Component = ELEMENTS_CONFIG_MAP[type].component as ComponentType<
+    typeof componentProps
+  >;
 
   return (
-    <Card
-      ref={draggable.setNodeRef}
-      sx={{
-        cursor: 'grab',
-      }}
-      {...draggable.listeners}
-      {...draggable.attributes}
-    >
-      <CardHeader
-        avatar={<Icon />}
-        sx={{ borderBottom: '1px solid', borderColor: 'lightgrey', p: '8px' }}
-      />
-      <CardContent sx={{ p: '8px !important' }}>
-        <Typography children={label} />
+    <Card sx={styles.wrapper} {...props}>
+      <CardHeader sx={styles.header} title={`<${type}>`} />
+      <CardContent sx={styles.content}>
+        <Component {...componentProps} />
       </CardContent>
     </Card>
   );
 };
 
-export const SidebarCardDragOverlay = ({ formElement }: TSidebarBtnProps) => {
-  const { icon: Icon, label } = formElement;
-
-  return (
-    <Card sx={{ cursor: 'grabbing' }}>
-      <CardHeader
-        avatar={<Icon />}
-        sx={{ borderBottom: '1px solid', borderColor: 'lightgrey', p: '8px' }}
-      />
-      <CardContent sx={{ p: '8px !important' }}>
-        <Typography children={label} />
-      </CardContent>
-    </Card>
-  );
+const styles = {
+  wrapper: {
+    cursor: 'grab',
+    height: '120px',
+    userSelect: 'none',
+  },
+  header: {
+    borderBottom: '1px solid',
+    borderColor: 'lightgrey',
+    padding: '8px',
+  },
+  content: {
+    pointerEvents: 'none',
+    padding: '8px !important',
+  },
 };
 
 export default SidebarCard;

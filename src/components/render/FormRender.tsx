@@ -1,29 +1,41 @@
 import { FormProvider, useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { Button, Stack } from '@mui/material';
-import FormRenderElement from './FormRenderElement.tsx';
+import { ELEMENTS_CONFIG_MAP } from '../elements';
+import { ComponentType, FC, ReactElement, useEffect } from 'react';
 import { TFormRenderProps } from './types.ts';
+import { zodResolver } from '@hookform/resolvers/zod';
 
-const FormRender = ({ fields, defaultValues, schema }: TFormRenderProps) => {
+const FormRender: FC<TFormRenderProps> = ({
+  elements,
+  defaultValues,
+  onSubmit,
+  schema,
+}): ReactElement => {
   const methods = useForm({
     defaultValues,
-    ...(schema ? { resolver: zodResolver(schema) } : {}),
+    ...(schema && {
+      resolver: zodResolver(schema),
+    }),
   });
-
-  const onSubmit = (values: unknown) => {
-    console.log({ values });
-  };
 
   const onReset = () => {
     methods.reset(defaultValues);
   };
 
+  useEffect(() => {
+    methods.reset(defaultValues);
+  }, [methods, defaultValues]);
+
   return (
     <FormProvider {...methods}>
+      {elements.map((element, index) => {
+        const Component = ELEMENTS_CONFIG_MAP[element.type]
+          .formComponent as ComponentType<typeof element.props>;
+
+        return <Component key={index} {...element.props} />;
+      })}
+
       <form onSubmit={methods.handleSubmit(onSubmit)}>
-        {fields.map((field) => {
-          return <FormRenderElement key={field.name} {...field} />;
-        })}
         <Stack direction="row" gap="16px">
           <Button color="error" onClick={onReset}>
             Cancel

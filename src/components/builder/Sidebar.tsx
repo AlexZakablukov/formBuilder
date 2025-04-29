@@ -1,54 +1,55 @@
 import { Box, IconButton, Typography } from '@mui/material';
+import { ArrowBackRounded } from '@mui/icons-material';
+import SidebarElements from './SidebarElements.tsx';
 import { useFormBuilderContext } from './context/FormBuilderContext.tsx';
 import SidebarProperties from './SidebarProperties.tsx';
-import SidebarElements from './SidebarElements.tsx';
-import { ArrowBackRounded } from '@mui/icons-material';
 
 const Sidebar = () => {
-  const { selectedElement, setSelectedElement } = useFormBuilderContext();
+  const { selectedElementId, setSelectedElementId } = useFormBuilderContext();
 
   return (
-    <Box
-      component="aside"
-      sx={{
-        borderRight: 1,
-        borderColor: 'lightgrey',
-      }}
-    >
-      <Box
-        sx={{
-          position: 'relative',
-          borderBottom: 1,
-          borderColor: 'lightgrey',
-          height: '48px',
-          paddingX: '48px',
-          textAlign: 'center',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
-        {selectedElement && (
+    <Box component="aside" sx={styles.wrapper}>
+      <Box sx={styles.header}>
+        {selectedElementId && (
           <IconButton
-            sx={{
-              position: 'absolute',
-              top: '4px',
-              left: '4px',
-              zIndex: 1,
-            }}
+            sx={styles.icon}
             onClick={() => {
-              setSelectedElement(null);
+              setSelectedElementId(null);
             }}
             children={<ArrowBackRounded />}
           />
         )}
-        <Typography children={selectedElement ? 'Properties' : 'Elements'} />
+        <Typography children={selectedElementId ? 'Properties' : 'Elements'} />
       </Box>
       <Box p="16px">
-        {selectedElement ? <SidebarProperties /> : <SidebarElements />}
+        {selectedElementId ? <SidebarProperties /> : <SidebarElements />}
       </Box>
     </Box>
   );
+};
+
+const styles = {
+  wrapper: {
+    borderRight: 1,
+    borderColor: 'lightgrey',
+  },
+  header: {
+    position: 'relative',
+    borderBottom: 1,
+    borderColor: 'lightgrey',
+    height: '48px',
+    paddingX: '48px',
+    textAlign: 'center',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  icon: {
+    position: 'absolute',
+    top: '4px',
+    left: '4px',
+    zIndex: 1,
+  },
 };
 
 export default Sidebar;

@@ -1,154 +1,72 @@
-import { Box } from '@mui/material';
-import { v4 as uuidv4 } from 'uuid';
 import pattern from '../../assets/pattern.svg';
-import { useDndMonitor, useDroppable } from '@dnd-kit/core';
+import { Box } from '@mui/material';
+import { MouseEvent } from 'react';
+import { useDroppable } from '@dnd-kit/core';
 import { useFormBuilderContext } from './context/FormBuilderContext.tsx';
-import { formElements, TElementsType } from './FormElements.tsx';
-import DesignerElementWrapper from './DesignerElementWrapper.tsx';
+import DesignerCardWrapper from './DesignerCardWrapper.tsx';
+import DesignerCard from './DesignerCard.tsx';
 
 const Designer = () => {
-  const { elements, addElement, setSelectedElement, removeElement } =
+  const { elementsIds, removeElement, setSelectedElementId } =
     useFormBuilderContext();
 
-  const droppable = useDroppable({
+  const { setNodeRef, isOver } = useDroppable({
     id: 'designer-drop-area',
     data: {
       isDesignerDropArea: true,
     },
   });
 
-  useDndMonitor({
-    onDragEnd: ({ active, over }) => {
-      if (!active || !over) {
-        return;
-      }
+  const onClick = (event: MouseEvent) => {
+    const target = event.target;
 
-      const isSidebarCard = active.data.current?.isSidebarCard;
-      const isOverDesignerDropArea = over.data.current?.isDesignerDropArea;
+    if (!(target instanceof Element)) {
+      return;
+    }
 
-      const droppingSidebarCardOverDesignerDropArea =
-        isSidebarCard && isOverDesignerDropArea;
+    const closestElementWithAction = target.closest('[data-action]');
 
-      if (droppingSidebarCardOverDesignerDropArea) {
-        const type: TElementsType = active.data.current?.type;
-        const newElement = formElements[type].construct(uuidv4());
-        addElement(elements.length, newElement);
-        return;
-      }
+    if (!closestElementWithAction) {
+      return;
+    }
 
-      const isOverDesignerElementTopHalf =
-        over.data.current?.isTopHalfDroppableArea;
-      const isOverDesignerElementBottomHalf =
-        over.data.current?.isBottomHalfDroppableArea;
+    const action = closestElementWithAction.getAttribute('data-action');
 
-      const isOverDesignerElement =
-        isOverDesignerElementTopHalf || isOverDesignerElementBottomHalf;
+    if (!action) {
+      return;
+    }
 
-      const droppingSidebarCardOverDesignerElement =
-        isSidebarCard && isOverDesignerElement;
+    const elementId = closestElementWithAction
+      .closest('[data-id]')
+      ?.getAttribute('data-id');
 
-      if (droppingSidebarCardOverDesignerElement) {
-        const type: TElementsType = active.data.current?.type;
-        const newElement = formElements[type].construct(uuidv4());
+    if (!elementId) {
+      return;
+    }
 
-        const overElementId = over.data.current?.elementId;
+    if (action === 'delete') {
+      removeElement(elementId);
+      return;
+    }
 
-        const overElementIndex = elements.findIndex(
-          (element) => element.id === overElementId,
-        );
-
-        if (overElementIndex === -1) {
-          return;
-        }
-
-        const newElementIndex = isOverDesignerElementTopHalf
-          ? overElementIndex
-          : overElementIndex + 1;
-
-        addElement(newElementIndex, newElement);
-        return;
-      }
-
-      const isDesignerElement = active.data.current?.isDesignerElement;
-
-      if (isDesignerElement && isOverDesignerElement) {
-        const activeElementId = active.data.current?.elementId;
-        const overElementId = over.data.current?.elementId;
-
-        const activeElementIndex = elements.findIndex(
-          (el) => el.id === activeElementId,
-        );
-        const overElementIndex = elements.findIndex(
-          (el) => el.id === overElementId,
-        );
-
-        if (activeElementIndex === -1 || overElementIndex === -1) {
-          return;
-        }
-
-        const newElement = { ...elements[activeElementIndex] };
-
-        removeElement(activeElementId);
-
-        const newElementIndex = isOverDesignerElementTopHalf
-          ? overElementIndex
-          : overElementIndex + 1;
-
-        addElement(newElementIndex, newElement);
-      }
-    },
-  });
+    if (action === 'edit') {
+      setSelectedElementId(elementId);
+      return;
+    }
+  };
 
   return (
-    <Box
-      sx={{
-        background: `url("${pattern}")`,
-        display: 'flex',
-        flexGrow: 1,
-        flexBasis: '200px',
-        padding: '8px',
-        position: 'relative',
-        overflowY: 'auto',
-      }}
-      onClick={() => {
-        setSelectedElement(null);
-      }}
-    >
-      <Box
-        ref={droppable.setNodeRef}
-        sx={{
-          flexGrow: 1,
-          borderRadius: '12px',
-          padding: '8px',
-          cursor: droppable.isOver ? 'copy' : 'default',
-          border: 1,
-          borderColor: droppable.isOver ? 'primary.main' : 'transparent',
-        }}
-      >
-        {droppable.isOver && elements.length === 0 && (
-          <Box
-            sx={{
-              width: '100%',
-              height: '120px',
-              borderRadius: '8px',
-              background: 'rgba(0, 0, 0, 0.2)',
-            }}
-          />
-        )}
-        {elements.length > 0 && (
-          <Box
-            sx={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '8px',
-            }}
-          >
-            {elements.map((elementInstance) => {
+    <Box sx={styles.wrapper} onClick={onClick}>
+      <Box ref={setNodeRef} sx={styles.container(isOver)}>
+        {isOver && elementsIds.length === 0 && <Box sx={styles.emptyOver} />}
+
+        {elementsIds.length > 0 && (
+          <Box sx={styles.list}>
+            {elementsIds.map((elementId) => {
               return (
-                <DesignerElementWrapper
-                  key={elementInstance.id}
-                  elementInstance={elementInstance}
-                />
+                <DesignerCardWrapper elementId={elementId} key={elementId}>
+                  <DesignerCard elementId={elementId} />
+                </DesignerCardWrapper>
               );
             })}
           </Box>
@@ -156,6 +74,37 @@ const Designer = () => {
       </Box>
     </Box>
   );
+};
+
+const styles = {
+  wrapper: {
+    background: `url("${pattern}")`,
+    display: 'flex',
+    flexGrow: 1,
+    flexBasis: '200px',
+    padding: '8px',
+    position: 'relative',
+    overflowY: 'auto',
+  },
+  container: (isOver: boolean) => ({
+    flexGrow: 1,
+    borderRadius: '12px',
+    padding: '8px',
+    cursor: isOver ? 'copy' : 'default',
+    border: 1,
+    borderColor: isOver ? 'primary.main' : 'transparent',
+  }),
+  emptyOver: {
+    width: '100%',
+    height: '120px',
+    borderRadius: '8px',
+    background: 'rgba(0, 0, 0, 0.2)',
+  },
+  list: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '8px',
+  },
 };
 
 export default Designer;
